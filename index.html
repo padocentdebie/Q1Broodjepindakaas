@@ -3,73 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Politieschool Q1 - Decoroefening</title>
+    <title>Q1 Politieschool - Dashboard</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; background: #f4f4f4; }
-        .screen { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .active { display: block; }
-        iframe { width: 100%; height: 500px; border: none; }
-        .feed { height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-top: 10px; background: #fafafa; }
-        .input-group { margin: 10px 0; }
-        button { padding: 10px 20px; cursor: pointer; background: #003366; color: white; border: none; border-radius: 4px; }
-        .admin-btn { background: #cc0000; margin-top: 20px; }
+        /* Basis styling en layout */
+        * { box-sizing: border-box; }
+        body { font-family: sans-serif; margin: 0; background: #002244; color: white; height: 100vh; overflow: hidden; }
+        
+        /* Login Scherm */
+        #login-overlay { position: fixed; inset: 0; background: #001a33; display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .login-box { background: white; color: #333; padding: 30px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        
+        /* Drieluik Container */
+        .container { display: flex; height: 100vh; width: 100vw; gap: 4px; padding: 4px; }
+        
+        /* Panes */
+        .pane { background: #fff; color: #333; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; }
+        #left-pane { flex: 2.5; } /* Presentatie krijgt de meeste ruimte */
+        #middle-pane { flex: 1.2; border-left: 2px solid #003366; border-right: 2px solid #003366; }
+        #right-pane { flex: 1.2; }
+
+        h3 { background: #003366; color: white; margin: 0; padding: 12px; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Iframe styling */
+        .iframe-container { width: 100%; flex-grow: 1; position: relative; }
+        iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        
+        /* Feed styling */
+        .feed { flex-grow: 1; overflow-y: auto; padding: 10px; background: #fdfdfd; }
+        .msg { margin-bottom: 10px; padding: 8px; border-radius: 4px; background: #eee; border-left: 4px solid #003366; }
+        .msg-user { font-weight: bold; color: #003366; display: block; font-size: 0.8rem; }
+        
+        /* Controls */
+        .controls { padding: 15px; background: #f0f0f0; border-top: 1px solid #ccc; }
+        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: #003366; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        button:hover { background: #004488; }
+        .reset-btn { background: #a00; margin-top: 8px; font-size: 0.75rem; padding: 6px; }
+
+        textarea { height: 250px; resize: none; font-family: inherit; }
     </style>
 </head>
 <body>
 
-    <div id="screen1" class="screen active">
-        <h2>Inloggen Politieschool Q1</h2>
-        <div class="input-group">
-            <label>Naam student:</label><br>
-            <input type="text" id="username" placeholder="Je naam">
-        </div>
-        <div class="input-group">
-            <label>Selecteer Natoklas:</label><br>
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2 style="margin-top:0">Politieschool Q1</h2>
+            <p>Log in om de les te starten.</p>
+            <input type="text" id="username" placeholder="Naam student">
             <select id="natoclass">
-                <option value="Alpha">Alpha</option>
-                <option value="Bravo">Bravo</option>
-                <option value="Charlie">Charlie</option>
-                <option value="Delta">Delta</option>
-                <option value="Echo">Echo</option>
-                <option value="Foxtrot">Foxtrot</option>
-                <option value="Golf">Golf</option>
-                <option value="Hotel">Hotel</option>
-                <option value="Juliet">Juliet</option>
-                <option value="Kilo">Kilo</option>
-                <option value="Lima">Lima</option>
-                <option value="Mike">Mike</option>
+                <option value="Alpha">Alpha</option><option value="Bravo">Bravo</option>
+                <option value="Charlie">Charlie</option><option value="Delta">Delta</option>
+                <option value="Echo">Echo</option><option value="Foxtrot">Foxtrot</option>
+                <option value="Golf">Golf</option><option value="Hotel">Hotel</option>
+                <option value="Juliet">Juliet</option><option value="Kilo">Kilo</option>
+                <option value="Lima">Lima</option><option value="Mike">Mike</option>
             </select>
+            <button onclick="login()">Start Sessie</button>
         </div>
-        <button onclick="login()">Start Les</button>
     </div>
 
-    <div id="screen2" class="screen">
-        <h2 id="welcome-msg"></h2>
-        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTdQf0fR6wtSduvzQCpyVSB-ZHENUMs9JPd8yu8b8eqWgBnGPsP8inXQLo46xfldcX_YeaWobOibYKF/pub?start=true&loop=true&delayms=3000"></iframe>
+    <div class="container">
         
-        <h3>Live Feed (Klas: <span id="current-class"></span>)</h3>
-        <div id="live-feed" class="feed"></div>
-        
-        <div class="input-group">
-            <input type="text" id="observation" placeholder="Welke fout zie je op deze dia?" style="width: 70%;">
-            <button onclick="sendObservation()">Verstuur</button>
+        <div class="pane" id="left-pane">
+            <h3>1. Analyseer de situatie</h3>
+            <div class="iframe-container">
+                <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTdQf0fR6wtSduvzQCpyVSB-ZHENUMs9JPd8yu8b8eqWgBnGPsP8inXQLo46xfldcX_YeaWobOibYKF/pubembed?start=true&loop=true&delayms=3000" allowfullscreen="true"></iframe>
+            </div>
         </div>
-        
-        <button class="admin-btn" onclick="resetFeed()">Reset Feed (Docent)</button>
-        <button onclick="nextScreen(3)">Naar Stappenplan</button>
-    </div>
 
-    <div id="screen3" class="screen">
-        <h2>Opdracht: Het Broodje Pindakaas</h2>
-        <p>Schrijf een waterdicht stappenplan voor de docent om een broodje pindakaas te smeren en te verorberen.</p>
-        <textarea id="pindakaas-plan" style="width: 100%; height: 200px;" placeholder="Stap 1: Pak een bord..."></textarea>
-        <br><br>
-        <button onclick="submitPlan()">Plan indienen</button>
+        <div class="pane" id="middle-pane">
+            <h3>2. Livefeed Klas: <span id="display-class">-</span></h3>
+            <div id="live-feed" class="feed"></div>
+            <div class="controls">
+                <input type="text" id="observation" placeholder="Beschrijf de fout...">
+                <button onclick="sendObservation()">Verstuur Observatie</button>
+                <button class="reset-btn" onclick="resetFeed()">Reset Feed (Docent)</button>
+            </div>
+        </div>
+
+        <div class="pane" id="right-pane">
+            <h3>3. Stappenplan Broodje Pindakaas</h3>
+            <div class="feed">
+                <p style="font-size: 0.9rem; color: #666;">Schrijf een waterdicht stappenplan voor de docent.</p>
+                <textarea id="pindakaas-plan" placeholder="Stap 1: Pak een wit bord uit de kast..."></textarea>
+            </div>
+            <div class="controls">
+                <button onclick="submitPlan()">Plan Opslaan</button>
+            </div>
+        </div>
+
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, set, remove, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB12mTMBnuxdC4W4htyFO_C7Dnh3maVKew",
@@ -84,70 +111,51 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let currentUser = "";
-        let currentClass = "";
+        let user = "";
+        let nato = "";
 
-        // LOGIN FUNCTIE
         window.login = function() {
-            currentUser = document.getElementById('username').value;
-            currentClass = document.getElementById('natoclass').value;
+            user = document.getElementById('username').value.trim();
+            nato = document.getElementById('natoclass').value;
+            if(!user) return alert("Voer je naam in");
             
-            if(!currentUser) return alert("Vul je naam in");
-            
-            document.getElementById('welcome-msg').innerText = `Agent: ${currentUser}`;
-            document.getElementById('current-class').innerText = currentClass;
-            
-            nextScreen(2);
-            startLiveFeed();
+            document.getElementById('display-class').innerText = nato;
+            document.getElementById('login-overlay').style.display = 'none';
+            startFeed();
         }
 
-        window.nextScreen = function(num) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen' + num).classList.add('active');
-        }
-
-        // LIVE FEED LOGICA
         window.sendObservation = function() {
-            const text = document.getElementById('observation').value;
-            if(!text) return;
-
-            push(ref(db, 'observations'), {
-                user: currentUser,
-                class: currentClass,
-                text: text,
-                timestamp: Date.now()
-            });
+            const val = document.getElementById('observation').value.trim();
+            if(!val) return;
+            push(ref(db, 'observations'), { user, nato, text: val, time: Date.now() });
             document.getElementById('observation').value = "";
         }
 
-        function startLiveFeed() {
-            const obsRef = ref(db, 'observations');
-            onValue(obsRef, (snapshot) => {
-                const feedDiv = document.getElementById('live-feed');
-                feedDiv.innerHTML = "";
-                snapshot.forEach((child) => {
+        function startFeed() {
+            onValue(ref(db, 'observations'), (snap) => {
+                const feed = document.getElementById('live-feed');
+                feed.innerHTML = "";
+                snap.forEach(child => {
                     const data = child.val();
-                    // Alleen tonen als het dezelfde klas is
-                    if(data.class === currentClass) {
-                        feedDiv.innerHTML += `<p><strong>${data.user}:</strong> ${data.text}</p>`;
+                    if(data.nato === nato) {
+                        feed.innerHTML += `<div class="msg"><span class="msg-user">${data.user}</span>${data.text}</div>`;
                     }
                 });
-                feedDiv.scrollTop = feedDiv.scrollHeight;
+                feed.scrollTop = feed.scrollHeight;
             });
         }
 
         window.resetFeed = function() {
-            if(confirm("Weet je zeker dat je de feed voor ALLE klassen wilt legen?")) {
+            if(confirm("Leraar-beveiliging: Wil je de HELE database legen voor alle klassen?")) {
                 remove(ref(db, 'observations'));
             }
         }
 
         window.submitPlan = function() {
-            const plan = document.getElementById('pindakaas-plan').value;
-            set(ref(db, 'plans/' + currentUser), {
-                class: currentClass,
-                plan: plan
-            }).then(() => alert("Stappenplan verzonden!"));
+            const p = document.getElementById('pindakaas-plan').value;
+            if(!p) return alert("Typ eerst je plan!");
+            set(ref(db, 'plans/' + user), { nato, plan: p })
+            .then(() => alert("Stappenplan succesvol opgeslagen in de database."));
         }
     </script>
 </body>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politieschool Q1 - Decoroefening</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f4f4f4; }
+        .screen { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .active { display: block; }
+        iframe { width: 100%; height: 500px; border: none; }
+        .feed { height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-top: 10px; background: #fafafa; }
+        .input-group { margin: 10px 0; }
+        button { padding: 10px 20px; cursor: pointer; background: #003366; color: white; border: none; border-radius: 4px; }
+        .admin-btn { background: #cc0000; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="screen1" class="screen active">
+        <h2>Inloggen Politieschool Q1</h2>
+        <div class="input-group">
+            <label>Naam student:</label><br>
+            <input type="text" id="username" placeholder="Je naam">
+        </div>
+        <div class="input-group">
+            <label>Selecteer Natoklas:</label><br>
+            <select id="natoclass">
+                <option value="Alpha">Alpha</option>
+                <option value="Bravo">Bravo</option>
+                <option value="Charlie">Charlie</option>
+                <option value="Delta">Delta</option>
+                <option value="Echo">Echo</option>
+                <option value="Foxtrot">Foxtrot</option>
+                <option value="Golf">Golf</option>
+                <option value="Hotel">Hotel</option>
+                <option value="Juliet">Juliet</option>
+                <option value="Kilo">Kilo</option>
+                <option value="Lima">Lima</option>
+                <option value="Mike">Mike</option>
+            </select>
+        </div>
+        <button onclick="login()">Start Les</button>
+    </div>
+
+    <div id="screen2" class="screen">
+        <h2 id="welcome-msg"></h2>
+        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTdQf0fR6wtSduvzQCpyVSB-ZHENUMs9JPd8yu8b8eqWgBnGPsP8inXQLo46xfldcX_YeaWobOibYKF/pub?start=true&loop=true&delayms=3000"></iframe>
+        
+        <h3>Live Feed (Klas: <span id="current-class"></span>)</h3>
+        <div id="live-feed" class="feed"></div>
+        
+        <div class="input-group">
+            <input type="text" id="observation" placeholder="Welke fout zie je op deze dia?" style="width: 70%;">
+            <button onclick="sendObservation()">Verstuur</button>
+        </div>
+        
+        <button class="admin-btn" onclick="resetFeed()">Reset Feed (Docent)</button>
+        <button onclick="nextScreen(3)">Naar Stappenplan</button>
+    </div>
+
+    <div id="screen3" class="screen">
+        <h2>Opdracht: Het Broodje Pindakaas</h2>
+        <p>Schrijf een waterdicht stappenplan voor de docent om een broodje pindakaas te smeren en te verorberen.</p>
+        <textarea id="pindakaas-plan" style="width: 100%; height: 200px;" placeholder="Stap 1: Pak een bord..."></textarea>
+        <br><br>
+        <button onclick="submitPlan()">Plan indienen</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, set, remove, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB12mTMBnuxdC4W4htyFO_C7Dnh3maVKew",
+            authDomain: "decoroefening.firebaseapp.com",
+            databaseURL: "https://decoroefening-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "decoroefening",
+            storageBucket: "decoroefening.firebasestorage.app",
+            messagingSenderId: "945998495824",
+            appId: "1:945998495824:web:a76dc7519b3b262a021155"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let currentUser = "";
+        let currentClass = "";
+
+        // LOGIN FUNCTIE
+        window.login = function() {
+            currentUser = document.getElementById('username').value;
+            currentClass = document.getElementById('natoclass').value;
+            
+            if(!currentUser) return alert("Vul je naam in");
+            
+            document.getElementById('welcome-msg').innerText = `Agent: ${currentUser}`;
+            document.getElementById('current-class').innerText = currentClass;
+            
+            nextScreen(2);
+            startLiveFeed();
+        }
+
+        window.nextScreen = function(num) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen' + num).classList.add('active');
+        }
+
+        // LIVE FEED LOGICA
+        window.sendObservation = function() {
+            const text = document.getElementById('observation').value;
+            if(!text) return;
+
+            push(ref(db, 'observations'), {
+                user: currentUser,
+                class: currentClass,
+                text: text,
+                timestamp: Date.now()
+            });
+            document.getElementById('observation').value = "";
+        }
+
+        function startLiveFeed() {
+            const obsRef = ref(db, 'observations');
+            onValue(obsRef, (snapshot) => {
+                const feedDiv = document.getElementById('live-feed');
+                feedDiv.innerHTML = "";
+                snapshot.forEach((child) => {
+                    const data = child.val();
+                    // Alleen tonen als het dezelfde klas is
+                    if(data.class === currentClass) {
+                        feedDiv.innerHTML += `<p><strong>${data.user}:</strong> ${data.text}</p>`;
+                    }
+                });
+                feedDiv.scrollTop = feedDiv.scrollHeight;
+            });
+        }
+
+        window.resetFeed = function() {
+            if(confirm("Weet je zeker dat je de feed voor ALLE klassen wilt legen?")) {
+                remove(ref(db, 'observations'));
+            }
+        }
+
+        window.submitPlan = function() {
+            const plan = document.getElementById('pindakaas-plan').value;
+            set(ref(db, 'plans/' + currentUser), {
+                class: currentClass,
+                plan: plan
+            }).then(() => alert("Stappenplan verzonden!"));
+        }
+    </script>
+</body>
+</html>

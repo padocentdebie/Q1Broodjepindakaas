@@ -3,53 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Q1 Politieschool - Dashboard</title>
+    <title>Q1 Politieschool - Centraal Gestuurd</title>
     <style>
-        /* Basis styling en layout */
         * { box-sizing: border-box; }
-        body { font-family: sans-serif; margin: 0; background: #002244; color: white; height: 100vh; overflow: hidden; }
+        body { font-family: sans-serif; margin: 0; background: #002244; color: white; height: 100vh; display: flex; flex-direction: column; }
         
-        /* Login Scherm */
+        /* Overlay voor login */
         #login-overlay { position: fixed; inset: 0; background: #001a33; display: flex; justify-content: center; align-items: center; z-index: 100; }
-        .login-box { background: white; color: #333; padding: 30px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        
-        /* Drieluik Container */
-        .container { display: flex; height: 100vh; width: 100vw; gap: 4px; padding: 4px; }
-        
-        /* Panes */
-        .pane { background: #fff; color: #333; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; }
-        #left-pane { flex: 2.5; } /* Presentatie krijgt de meeste ruimte */
-        #middle-pane { flex: 1.2; border-left: 2px solid #003366; border-right: 2px solid #003366; }
-        #right-pane { flex: 1.2; }
+        .login-box { background: white; color: #333; padding: 30px; border-radius: 8px; width: 320px; text-align: center; }
 
-        h3 { background: #003366; color: white; margin: 0; padding: 12px; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
-        
-        /* Iframe styling */
-        .iframe-container { width: 100%; flex-grow: 1; position: relative; }
-        iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-        
-        /* Feed styling */
-        .feed { flex-grow: 1; overflow-y: auto; padding: 10px; background: #fdfdfd; }
-        .msg { margin-bottom: 10px; padding: 8px; border-radius: 4px; background: #eee; border-left: 4px solid #003366; }
-        .msg-user { font-weight: bold; color: #003366; display: block; font-size: 0.8rem; }
+        /* Content Areas */
+        .screen { display: none; flex-direction: column; height: 100vh; padding: 20px; }
+        .active { display: flex; }
+
+        /* Specifieke elementen */
+        iframe { width: 100%; flex-grow: 1; border: none; border-radius: 8px; background: white; }
+        .feed { height: 300px; overflow-y: auto; background: rgba(255,255,255,0.1); padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .msg { margin-bottom: 8px; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
         
         /* Controls */
-        .controls { padding: 15px; background: #f0f0f0; border-top: 1px solid #ccc; }
-        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        button { width: 100%; padding: 12px; background: #003366; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
-        button:hover { background: #004488; }
-        .reset-btn { background: #a00; margin-top: 8px; font-size: 0.75rem; padding: 6px; }
-
-        textarea { height: 250px; resize: none; font-family: inherit; }
+        .admin-panel { background: #cc0000; padding: 10px; display: flex; justify-content: space-around; position: sticky; top: 0; z-index: 50; }
+        .controls { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 4px; border: none; }
+        button { padding: 12px 24px; background: #0055aa; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0077cc; }
+        .nav-btn { background: #ffcc00; color: #000; }
     </style>
 </head>
 <body>
 
+    <div id="admin-controls" class="admin-panel" style="display:none;">
+        <strong>DOCENT MODUS:</strong>
+        <button class="nav-btn" onclick="setGlobalScreen(1)">Scherm 1 (Login)</button>
+        <button class="nav-btn" onclick="setGlobalScreen(2)">Scherm 2 (Presentatie)</button>
+        <button class="nav-btn" onclick="setGlobalScreen(3)">Scherm 3 (Pindakaas)</button>
+        <button onclick="resetAllData()" style="background:black;">Reset Alles</button>
+    </div>
+
     <div id="login-overlay">
         <div class="login-box">
-            <h2 style="margin-top:0">Politieschool Q1</h2>
-            <p>Log in om de les te starten.</p>
-            <input type="text" id="username" placeholder="Naam student">
+            <h2>Politieschool Q1</h2>
+            <input type="text" id="username" placeholder="Naam">
             <select id="natoclass">
                 <option value="Alpha">Alpha</option><option value="Bravo">Bravo</option>
                 <option value="Charlie">Charlie</option><option value="Delta">Delta</option>
@@ -58,45 +52,36 @@
                 <option value="Juliet">Juliet</option><option value="Kilo">Kilo</option>
                 <option value="Lima">Lima</option><option value="Mike">Mike</option>
             </select>
-            <button onclick="login()">Start Sessie</button>
+            <button onclick="login()">Deelnemen</button>
+            <p style="font-size: 10px; color: #999; margin-top: 20px; cursor: pointer;" onclick="enableAdmin()">Docent login</p>
         </div>
     </div>
 
-    <div class="container">
-        
-        <div class="pane" id="left-pane">
-            <h3>1. Analyseer de situatie</h3>
-            <div class="iframe-container">
-                <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTdQf0fR6wtSduvzQCpyVSB-ZHENUMs9JPd8yu8b8eqWgBnGPsP8inXQLo46xfldcX_YeaWobOibYKF/pubembed?start=true&loop=true&delayms=3000" allowfullscreen="true"></iframe>
-            </div>
-        </div>
+    <div id="view1" class="screen">
+        <h1>Welkom bij de les</h1>
+        <p>Wacht tot de docent de presentatie start...</p>
+    </div>
 
-        <div class="pane" id="middle-pane">
-            <h3>2. Livefeed Klas: <span id="display-class">-</span></h3>
-            <div id="live-feed" class="feed"></div>
-            <div class="controls">
-                <input type="text" id="observation" placeholder="Beschrijf de fout...">
-                <button onclick="sendObservation()">Verstuur Observatie</button>
-                <button class="reset-btn" onclick="resetFeed()">Reset Feed (Docent)</button>
-            </div>
+    <div id="view2" class="screen">
+        <h3>Live Analyse: Klas <span id="display-class"></span></h3>
+        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTdQf0fR6wtSduvzQCpyVSB-ZHENUMs9JPd8yu8b8eqWgBnGPsP8inXQLo46xfldcX_YeaWobOibYKF/pubembed?start=true&loop=true&delayms=3000"></iframe>
+        <div id="live-feed" class="feed"></div>
+        <div class="controls">
+            <input type="text" id="observation" placeholder="Typ hier de fout die je ziet...">
+            <button onclick="sendObservation()">Verstuur</button>
         </div>
+    </div>
 
-        <div class="pane" id="right-pane">
-            <h3>3. Stappenplan Broodje Pindakaas</h3>
-            <div class="feed">
-                <p style="font-size: 0.9rem; color: #666;">Schrijf een waterdicht stappenplan voor de docent.</p>
-                <textarea id="pindakaas-plan" placeholder="Stap 1: Pak een wit bord uit de kast..."></textarea>
-            </div>
-            <div class="controls">
-                <button onclick="submitPlan()">Plan Opslaan</button>
-            </div>
-        </div>
-
+    <div id="view3" class="screen">
+        <h1>Opdracht: Stappenplan Broodje Pindakaas</h1>
+        <p>Beschrijf exact hoe de docent een broodje moet smeren en opeten.</p>
+        <textarea id="pindakaas-plan" style="height: 300px;" placeholder="Stap 1..."></textarea>
+        <button onclick="submitPlan()">Opslaan</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB12mTMBnuxdC4W4htyFO_C7Dnh3maVKew",
@@ -113,21 +98,53 @@
 
         let user = "";
         let nato = "";
+        let isAdmin = false;
 
+        // DOCENT FUNCTIES
+        window.enableAdmin = function() {
+            const pw = prompt("Wachtwoord docent:");
+            if(pw === "docent2026") { // Simpel wachtwoord
+                isAdmin = true;
+                document.getElementById('admin-controls').style.display = 'flex';
+            }
+        }
+
+        window.setGlobalScreen = function(num) {
+            set(ref(db, 'currentScreen'), num);
+        }
+
+        window.resetAllData = function() {
+            if(confirm("DANGER: Dit verwijdert alle inzendingen van studenten!")) {
+                remove(ref(db, 'observations'));
+                remove(ref(db, 'plans'));
+                set(ref(db, 'currentScreen'), 1);
+            }
+        }
+
+        // STUDENT FUNCTIES
         window.login = function() {
             user = document.getElementById('username').value.trim();
             nato = document.getElementById('natoclass').value;
-            if(!user) return alert("Voer je naam in");
+            if(!user) return alert("Naam verplicht");
             
             document.getElementById('display-class').innerText = nato;
             document.getElementById('login-overlay').style.display = 'none';
+            
+            // Luister naar welk scherm getoond moet worden
+            onValue(ref(db, 'currentScreen'), (snap) => {
+                const screenNum = snap.val() || 1;
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById('view' + screenNum);
+                if(target) target.classList.add('active');
+            });
+
             startFeed();
         }
 
         window.sendObservation = function() {
-            const val = document.getElementById('observation').value.trim();
-            if(!val) return;
-            push(ref(db, 'observations'), { user, nato, text: val, time: Date.now() });
+            const text = document.getElementById('observation').value.trim();
+            if(!text) return;
+            push(ref(db, 'observations'), { user, nato, text, time: Date.now() });
             document.getElementById('observation').value = "";
         }
 
@@ -138,24 +155,16 @@
                 snap.forEach(child => {
                     const data = child.val();
                     if(data.nato === nato) {
-                        feed.innerHTML += `<div class="msg"><span class="msg-user">${data.user}</span>${data.text}</div>`;
+                        feed.innerHTML += `<div class="msg"><strong>${data.user}:</strong> ${data.text}</div>`;
                     }
                 });
                 feed.scrollTop = feed.scrollHeight;
             });
         }
 
-        window.resetFeed = function() {
-            if(confirm("Leraar-beveiliging: Wil je de HELE database legen voor alle klassen?")) {
-                remove(ref(db, 'observations'));
-            }
-        }
-
         window.submitPlan = function() {
-            const p = document.getElementById('pindakaas-plan').value;
-            if(!p) return alert("Typ eerst je plan!");
-            set(ref(db, 'plans/' + user), { nato, plan: p })
-            .then(() => alert("Stappenplan succesvol opgeslagen in de database."));
+            const plan = document.getElementById('pindakaas-plan').value;
+            set(ref(db, 'plans/' + user), { nato, plan }).then(() => alert("Opgeslagen!"));
         }
     </script>
 </body>

@@ -3,151 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Q1 Politieschool - Centraal Gestuurd</title>
+    <title>Q1 Politieschool - Interactief</title>
     <style>
         * { box-sizing: border-box; }
         body { 
-            font-family: 'Segoe UI', sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; 
-            background: #002244; 
-            color: white; 
+            background: linear-gradient(135deg, #0a1e3f 0%, #1a3a6a 100%);
+            color: #fff; 
             height: 100vh; 
             display: flex; 
             flex-direction: column;
-            overflow: hidden; /* Voorkomt dubbel scrollen */
+            overflow: hidden;
         }
         
-        /* Overlay voor login */
-        #login-overlay { position: fixed; inset: 0; background: #001a33; display: flex; justify-content: center; align-items: center; z-index: 100; }
-        .login-box { background: white; color: #333; padding: 30px; border-radius: 8px; width: 320px; text-align: center; }
+        /* Login Overlay */
+        #login-overlay { position: fixed; inset: 0; background: rgba(10, 30, 63, 0.9); backdrop-filter: blur(6px); display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .login-box { background: #ffffff; color: #1e293b; padding: 40px; border-radius: 24px; width: 360px; max-width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.3); text-align: center; animation: fadeUp 0.4s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .login-box h2 { margin-top: 0; color: #0a1e3f; font-weight: 700; }
+        .login-box input, .login-box select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 1rem; background: #f8fafc; transition: 0.2s; }
+        .login-box input:focus, .login-box select:focus { border-color: #f7c948; box-shadow: 0 0 0 3px rgba(247,201,72,0.2); outline: none; }
+        .login-box button { width: 100%; padding: 14px; background: #f7c948; color: #0a1e3f; border: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
+        .login-box button:hover { background: #e5b840; transform: translateY(-2px); }
+        .login-box .docent-link { margin-top: 20px; font-size: 0.8rem; color: #94a3b8; cursor: pointer; text-decoration: underline; }
 
-        /* Content Areas */
+        /* Screens */
         .screen { display: none; flex-direction: column; height: 100vh; padding: 20px; overflow-y: auto; }
         .active { display: flex; }
 
-        /* Specifieke elementen */
-        iframe { 
-            width: 100%; 
-            min-height: 400px;
-            max-height: 500px;
-            border: none; 
-            border-radius: 8px 8px 0 0; 
-            background: white; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-        }
+        /* Admin Panel */
+        .admin-panel { background: #b91c1c; padding: 12px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
-        .feed { 
-            max-height: 200px; 
-            overflow-y: auto; 
-            background: rgba(255,255,255,0.1); 
-            padding: 15px; 
-            margin: 10px 0; 
-            border-radius: 4px; 
-        }
-        .msg { margin-bottom: 8px; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
-        
-        /* Controls */
-        .admin-panel { background: #cc0000; padding: 10px; display: flex; justify-content: space-around; position: sticky; top: 0; z-index: 50; flex-wrap: wrap; gap: 8px; }
-        .controls { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; margin-bottom: 10px; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 4px; border: none; }
-        button { padding: 12px 24px; background: #0055aa; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0077cc; }
-        .nav-btn { background: #ffcc00; color: #000; }
-
-        /* === DIGIBORD STYLES === */
-        #board-container { 
-            position: relative;
-            width: 100%;
-            background: #ffffff; 
-            border: 2px solid #003082; 
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            touch-action: none;
-            margin-bottom: 10px;
-        }
-        
-        #whiteboard { 
-            width: 100%; 
-            height: 350px; /* Vaste hoogte voor het bord */
-            display: block; 
-            cursor: crosshair; 
-            border-radius: 0 0 10px 10px;
-            background: white;
-        }
-
-        .board-toolbar { 
-            background: #f8f9fa; 
-            padding: 10px; 
-            display: flex; 
-            gap: 8px; 
-            justify-content: center; 
-            align-items: center;
-            border-top: 1px solid #ddd;
-            flex-wrap: wrap;
-        }
-        
-        .board-toolbar input { 
-            padding: 8px; 
-            width: 200px; 
-            border: 1px solid #ccc; 
-            border-radius: 6px; 
-            font-size: 14px;
-            margin: 0;
-        }
-        
-        .board-btn { 
-            padding: 8px 16px; 
-            border: none; 
-            border-radius: 6px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            color: white; 
-            font-size: 13px; 
-        }
-        #addBtn { background: #003082; }
-        #clearBoardBtn { background: #d32f2f; }
-
-        #board-status { 
-            position: absolute; 
-            top: 10px; 
-            right: 15px; 
-            padding: 4px 10px; 
-            border-radius: 20px; 
-            font-size: 10px; 
-            font-weight: bold;
-            background: #eee; 
-            border: 1px solid #ccc; 
-            z-index: 10;
-            color: #333;
-        }
-        #board-status.online { background: #ebffed; color: #2e7d32; border-color: #2e7d32; }
-
-        #trash-zone { 
-            position: absolute; 
-            top: 10px; 
-            left: 15px; 
-            width: 45px; 
-            height: 45px; 
-            background: #fee2e2; 
-            border: 2px dashed #f87171; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 20px; 
-            opacity: 0.6; 
-            transition: 0.2s; 
-            z-index: 10;
-        }
-        #trash-zone.active { transform: scale(1.2); background: #ef4444; opacity: 1; border-style: solid; }
-
-        .view2-layout {
+        /* Content Layout */
+        .view2-layout, .view3-layout {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 16px;
             flex: 1;
             overflow-y: auto;
             padding-bottom: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(4px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            color: #1e293b;
+        }
+        .card h3 { margin-top: 0; color: #0a1e3f; }
+
+        /* Iframe */
+        .iframe-wrapper { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+        iframe { width: 100%; height: 400px; border: none; display: block; }
+
+        /* Feeds */
+        .feed { 
+            max-height: 250px; 
+            overflow-y: auto; 
+            background: #f1f5f9; 
+            padding: 16px; 
+            border-radius: 16px; 
+            margin-top: 10px; 
+            border: 1px solid #e2e8f0;
+        }
+        .msg { 
+            margin-bottom: 10px; 
+            padding: 8px 12px; 
+            background: #fff; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            border-left: 4px solid #f7c948;
+        }
+        .msg strong { color: #0a1e3f; }
+        .msg .time { font-size: 0.7rem; color: #94a3b8; float: right; }
+
+        /* Controls */
+        .controls { 
+            background: #f8fafc; 
+            padding: 16px; 
+            border-radius: 16px; 
+            border: 1px solid #e2e8f0;
+        }
+        .controls input, .controls textarea { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 8px 0; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            background: #fff; 
+            transition: 0.2s; 
+        }
+        .controls input:focus, .controls textarea:focus { border-color: #f7c948; box-shadow: 0 0 0 3px rgba(247,201,72,0.2); outline: none; }
+        .controls button { 
+            padding: 14px 28px; 
+            background: #f7c948; 
+            color: #0a1e3f; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        .controls button:hover { background: #e5b840; transform: translateY(-2px); }
+
+        /* Digibord */
+        #board-container { 
+            position: relative;
+            width: 100%;
+            background: #fff; 
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            touch-action: none;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        #whiteboard { width: 100%; height: 350px; display: block; cursor: crosshair; background: #fff; }
+        .board-toolbar { 
+            background: #f8fafc; 
+            padding: 12px; 
+            display: flex; 
+            gap: 12px; 
+            justify-content: center; 
+            align-items: center;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+        .board-toolbar input { padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; flex: 1; min-width: 150px; }
+        .board-btn { padding: 10px 20px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; }
+        #addBtn { background: #0a1e3f; }
+        #addBtn:hover { background: #1a3a6a; }
+        #clearBoardBtn { background: #d32f2f; }
+        #clearBoardBtn:hover { background: #b71c1c; }
+
+        #board-status { position: absolute; top: 12px; right: 12px; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #eee; color: #333; z-index: 10; }
+        #board-status.online { background: #ebffed; color: #2e7d32; border: 1px solid #2e7d32; }
+        #trash-zone { position: absolute; top: 12px; left: 12px; width: 40px; height: 40px; background: #fee2e2; border: 2px dashed #f87171; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; opacity: 0.6; transition: 0.2s; z-index: 10; }
+        #trash-zone.active { transform: scale(1.2); background: #ef4444; opacity: 1; border-style: solid; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .login-box { padding: 24px; }
+            .card { padding: 16px; }
+            iframe { height: 300px; }
+            .board-toolbar input { min-width: 100px; }
         }
     </style>
 </head>
@@ -155,16 +162,16 @@
 
     <div id="admin-controls" class="admin-panel" style="display:none;">
         <strong>DOCENT MODUS:</strong>
-        <button class="nav-btn" onclick="setGlobalScreen(1)">Scherm 1 (Login)</button>
-        <button class="nav-btn" onclick="setGlobalScreen(2)">Scherm 2 (Presentatie)</button>
-        <button class="nav-btn" onclick="setGlobalScreen(3)">Scherm 3 (Pindakaas)</button>
-        <button onclick="resetAllData()" style="background:black;">Reset Alles</button>
+        <button class="nav-btn" onclick="setGlobalScreen(1)">Scherm 1</button>
+        <button class="nav-btn" onclick="setGlobalScreen(2)">Scherm 2</button>
+        <button class="nav-btn" onclick="setGlobalScreen(3)">Scherm 3</button>
+        <button onclick="resetAllData()" style="background:black; color:white;">Reset Alles</button>
     </div>
 
     <div id="login-overlay">
         <div class="login-box">
-            <h2>Politieschool Q1</h2>
-            <input type="text" id="username" placeholder="Naam">
+            <h2>🚔 Politieschool Q1</h2>
+            <input type="text" id="username" placeholder="Je voornaam">
             <select id="natoclass">
                 <option value="Alpha">Alpha</option><option value="Bravo">Bravo</option>
                 <option value="Charlie">Charlie</option><option value="Delta">Delta</option>
@@ -174,49 +181,65 @@
                 <option value="Lima">Lima</option><option value="Mike">Mike</option>
             </select>
             <button onclick="login()">Deelnemen</button>
-            <p style="font-size: 10px; color: #999; margin-top: 20px; cursor: pointer;" onclick="enableAdmin()">Docent login</p>
+            <p class="docent-link" onclick="enableAdmin()">Docent login</p>
         </div>
     </div>
 
     <div id="view1" class="screen">
-        <h1>Welkom bij de les</h1>
-        <p>Wacht tot de docent de presentatie start...</p>
+        <div class="card" style="text-align:center; max-width:600px; margin:auto;">
+            <h1>👋 Welkom bij de les</h1>
+            <p style="font-size:1.2rem;">Wacht tot de docent de presentatie start...</p>
+        </div>
     </div>
 
     <div id="view2" class="screen">
         <div class="view2-layout">
-            <h3>Live Analyse: Klas <span id="display-class"></span></h3>
+            <div class="card">
+                <h3>📊 Live Analyse: Klas <span id="display-class" style="color:#f7c948;"></span></h3>
+            </div>
             
-            <!-- Google Slides Presentatie -->
-            <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTdQf0fR6wtSduvzQCpyVSB-ZHENUMs9JPd8yu8b8eqWgBnGPsP8inXQLo46xfldcX_YeaWobOibYKF/pubembed?start=true&loop=true&delayms=3000"></iframe>
-            
-            <!-- Live Feed voor observaties -->
-            <div id="live-feed" class="feed"></div>
-            <div class="controls">
-                <input type="text" id="observation" placeholder="Typ hier de fout die je ziet...">
-                <button onclick="sendObservation()">Verstuur</button>
+            <div class="iframe-wrapper">
+                <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTdQf0fR6wtSduvzQCpyVSB-ZHENUMs9JPd8yu8b8eqWgBnGPsP8inXQLo46xfldcX_YeaWobOibYKF/pubembed?start=true&loop=true&delayms=3000"></iframe>
             </div>
 
-            <!-- DIGIBORD INTEGRATIE -->
-            <h3>📝 Digibord - Uitleg & Voorbeelden</h3>
-            <div id="board-container">
-                <canvas id="whiteboard" width="1200" height="600"></canvas>
-                <div id="board-status">Status: Laden...</div>
-                <div id="trash-zone">🗑️</div>
-                <div class="board-toolbar">
-                    <input type="text" id="wordInput" placeholder="Woord of tekst toevoegen...">
-                    <button id="addBtn" class="board-btn">Toevoegen</button>
-                    <button id="clearBoardBtn" class="board-btn">Wis Bord</button>
+            <div class="card">
+                <h3>💬 Observaties</h3>
+                <div id="live-feed" class="feed"></div>
+                <div class="controls">
+                    <input type="text" id="observation" placeholder="Typ hier de fout die je ziet...">
+                    <button onclick="sendObservation()">Verstuur</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>✏️ Digibord</h3>
+                <div id="board-container">
+                    <canvas id="whiteboard" width="1200" height="600"></canvas>
+                    <div id="board-status">Status: Laden...</div>
+                    <div id="trash-zone">🗑️</div>
+                    <div class="board-toolbar">
+                        <input type="text" id="wordInput" placeholder="Woord toevoegen...">
+                        <button id="addBtn" class="board-btn">Toevoegen</button>
+                        <button id="clearBoardBtn" class="board-btn">Wis Bord</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="view3" class="screen">
-        <h1>Opdracht: Stappenplan Broodje Pindakaas</h1>
-        <p>Beschrijf exact hoe de docent een broodje moet smeren en opeten.</p>
-        <textarea id="pindakaas-plan" style="height: 300px;" placeholder="Stap 1..."></textarea>
-        <button onclick="submitPlan()">Opslaan</button>
+        <div class="view3-layout">
+            <div class="card">
+                <h3>🍞 Stappenplan Broodje Pindakaas</h3>
+                <p>Beschrijf exact hoe de docent een broodje moet smeren en opeten.</p>
+                <div class="controls">
+                    <textarea id="pindakaas-plan" rows="4" placeholder="Stap 1..."></textarea>
+                    <button onclick="submitPlan()">Opslaan</button>
+                </div>
+                <h4 style="margin-top:20px;">📋 Ingediende plannen</h4>
+                <div id="plan-feed" class="feed"></div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -240,21 +263,18 @@
         let nato = "";
         let isAdmin = false;
 
-        // === DIGIBORD VARIABELEN ===
+        // === DIGIBORD ===
         const canvas = document.getElementById('whiteboard');
         const ctx = canvas.getContext('2d');
         const boardStatus = document.getElementById('board-status');
         const trashZone = document.getElementById('trash-zone');
-        
         let boardObjects = {};
         let isDrawing = false, isDragging = false;
         let draggedId = null, currentPathId = null;
         let offsetX = 0, offsetY = 0;
-        let currentBoardClass = "Alpha"; // Standaard klasse
+        let currentBoardClass = "Alpha";
 
-        // === DIGIBORD FUNCTIES ===
-        
-        // Status sync voor digibord
+        // Status sync
         onValue(ref(db, ".info/connected"), (snap) => {
             if (snap.val()) {
                 boardStatus.innerText = "● LIVE";
@@ -262,7 +282,6 @@
             }
         });
 
-        // Universele positie berekening (Muis & Touch)
         const getPos = (e) => {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -336,17 +355,13 @@
             trashZone.classList.remove('active');
         };
 
-        // Event Listeners voor Muis
         canvas.addEventListener('mousedown', startAction);
         window.addEventListener('mousemove', moveAction);
         window.addEventListener('mouseup', stopAction);
-
-        // Event Listeners voor Touch (Mobiel/Tablet)
         canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startAction(e); }, { passive: false });
         window.addEventListener('touchmove', (e) => { e.preventDefault(); moveAction(e); }, { passive: false });
         window.addEventListener('touchend', stopAction);
 
-        // Bord knoppen
         document.getElementById('addBtn').addEventListener('click', () => {
             const val = document.getElementById('wordInput').value.trim();
             if (val) {
@@ -366,7 +381,6 @@
             }
         });
 
-        // Renderen van het bord
         onValue(ref(db, `classes/${currentBoardClass}/board`), (snap) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             boardObjects = snap.val() || {};
@@ -380,12 +394,7 @@
                     if (isSel) {
                         ctx.strokeStyle = "#003082";
                         ctx.lineWidth = 2;
-                        ctx.strokeRect(
-                            obj.x - 5, 
-                            obj.y - 30, 
-                            ctx.measureText(obj.text).width + 10, 
-                            40
-                        );
+                        ctx.strokeRect(obj.x - 5, obj.y - 30, ctx.measureText(obj.text).width + 10, 40);
                     }
                 } else if (obj.type === 'path' && obj.points) {
                     ctx.strokeStyle = "#4b5563"; 
@@ -399,9 +408,7 @@
             });
         });
 
-        // === BESTAANDE DOCENT/STUDENT FUNCTIES ===
-        
-        // DOCENT FUNCTIES
+        // === DOCENT FUNCTIES ===
         window.enableAdmin = function() {
             const pw = prompt("Wachtwoord docent:");
             if(pw === "docent") {
@@ -422,25 +429,19 @@
             }
         }
 
-        // STUDENT FUNCTIES
+        // === STUDENT FUNCTIES ===
         window.login = function() {
             const usernameInput = document.getElementById('username');
-            if (!usernameInput) {
-                alert('Invoerveld voor naam niet gevonden!');
-                return;
-            }
             user = usernameInput.value.trim();
             nato = document.getElementById('natoclass').value;
             if (!user) {
                 alert("Naam verplicht");
                 return;
             }
-            
-            currentBoardClass = nato; // Update bord klasse
+            currentBoardClass = nato;
             document.getElementById('display-class').innerText = nato;
             document.getElementById('login-overlay').style.display = 'none';
-            
-            // Luister naar welk scherm getoond moet worden
+
             onValue(ref(db, 'currentScreen'), (snap) => {
                 const screenNum = snap.val() || 1;
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -449,6 +450,7 @@
             });
 
             startFeed();
+            startPlanFeed();
         }
 
         window.sendObservation = function() {
@@ -458,15 +460,27 @@
             document.getElementById('observation').value = "";
         }
 
-        // ---- AANGEPASTE STARTFEED ----
+        // Live feed voor observaties (alle klassen)
         function startFeed() {
             onValue(ref(db, 'observations'), (snap) => {
                 const feed = document.getElementById('live-feed');
                 feed.innerHTML = "";
                 snap.forEach(child => {
                     const data = child.val();
-                    // Toon alle observaties, met klasnaam
                     feed.innerHTML += `<div class="msg"><strong>${data.user} (${data.nato}):</strong> ${data.text}</div>`;
+                });
+                feed.scrollTop = feed.scrollHeight;
+            });
+        }
+
+        // Live feed voor plannen (alle klassen)
+        function startPlanFeed() {
+            onValue(ref(db, 'plans'), (snap) => {
+                const feed = document.getElementById('plan-feed');
+                feed.innerHTML = "";
+                snap.forEach(child => {
+                    const data = child.val();
+                    feed.innerHTML += `<div class="msg"><strong>${child.key} (${data.nato}):</strong> ${data.plan}</div>`;
                 });
                 feed.scrollTop = feed.scrollHeight;
             });
@@ -474,7 +488,17 @@
 
         window.submitPlan = function() {
             const plan = document.getElementById('pindakaas-plan').value;
-            set(ref(db, 'plans/' + user), { nato, plan }).then(() => alert("Opgeslagen!"));
+            if(!plan.trim()) { alert("Vul een plan in."); return; }
+            set(ref(db, 'plans/' + user), { nato, plan }).then(() => {
+                document.getElementById('pindakaas-plan').value = "";
+                alert("Opgeslagen!");
+            });
+        }
+
+        // Start de feeds zodra geladen (als de gebruiker al ingelogd is)
+        if (!document.getElementById('login-overlay').style.display === 'none') {
+            startFeed();
+            startPlanFeed();
         }
     </script>
 </body>
